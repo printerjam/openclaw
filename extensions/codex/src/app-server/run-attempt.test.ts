@@ -2127,7 +2127,7 @@ describe("runCodexAppServerAttempt", () => {
     };
     let creatorAllowlist: Array<string | { name: string; pluginId?: string }> | undefined;
     testing.setOpenClawCodingToolsFactoryForTests((options) => {
-      creatorAllowlist ??= options.cronCreatorToolAllowlistRef;
+      creatorAllowlist ??= options?.cronCreatorToolAllowlistRef;
       return [];
     });
     const { sessionFile, workspaceDir } = createRunPaths();
