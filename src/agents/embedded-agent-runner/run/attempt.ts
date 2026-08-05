@@ -14,6 +14,7 @@ import {
   type AgentRunAttemptTerminal,
 } from "../../agent-run-terminal-outcome.js";
 import { resolveAgentDir } from "../../agent-scope.js";
+import { cloneCodeModeStats } from "../../code-mode-stats.js";
 import type { guardSessionManager } from "../../session-tool-result-guard-wrapper.js";
 import type { AgentSession } from "../../sessions/index.js";
 import {
@@ -513,6 +514,9 @@ export async function runEmbeddedAttempt(
                 call: catalogSession.callCount,
               },
             }
+          : {}),
+        ...(catalogSession?.codeModeStats
+          ? { codeModeStats: cloneCodeModeStats(catalogSession.codeModeStats) }
           : {}),
       };
     } finally {
