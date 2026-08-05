@@ -73,8 +73,9 @@ behavior, or model selection.
   of full tool schemas.
 - Better orchestration: the model can use loops, joins, small transforms,
   conditional logic, and parallel nested tool calls inside one code cell.
-- Fewer model round trips: a declared output contract lets the model call and
-  transform a tool result in one `exec`; unknown outputs remain raw-first.
+- Fewer model round trips: a declared output contract lets the model perform
+  deterministic transforms in one `exec`; unknown outputs remain raw-first,
+  while ambiguous target selection retains a model-observation boundary.
 - Provider neutral: works for OpenClaw, plugin, MCP, and client tools without
   depending on provider-native code execution.
 - Fails closed: if code mode is enabled but the QuickJS-WASI runtime is
@@ -159,6 +160,18 @@ const [shipmentTool] = await tools.search("list shipments");
 const shipments = await tools.callValue(shipmentTool.id, {});
 return shipments.filter((shipment) => !shipment.paid && shipment.tons > 10);
 ```
+
+This is a deterministic transform over declared fields. A declared output
+schema describes JSON structure only. A mutation may remain in the same `exec`
+when the request or prior context already supplies the exact target id. It may
+also follow a read when an explicit equality predicate produces exactly one
+match and the program checks that uniqueness. If there are zero or multiple
+matches, or selection depends on fuzzy matching, ranking, or semantic judgment,
+return the candidates for model observation and mutate only in a later `exec`.
+The same observation boundary applies even to a grounded or unique target when
+authority, permission, or ownership evidence conflicts or needs judgment:
+return that evidence first, then mutate in a later `exec`. Normal tool policy
+and approvals still apply in every case.
 
 When a quick-index line ends in `-> ?`, the output shape is unknown. The first
 `exec` must return `await tools.callValue(...)` unchanged. A later `exec` can
@@ -542,6 +555,15 @@ read `ALL_TOOLS` or call `tools.search(...)` inside the guest program.
 
 The arrow in each quick-index line describes the `tools.callValue(...)` value.
 `-> Array<{ id: string }>` is a declared output hint; `-> ?` is output unknown.
+Declared hints establish structure only. Deterministic transforms may stay
+inline. A mutation may also stay inline when it uses an exact target id already
+grounded by the request or context, or when an explicit equality predicate
+produces exactly one match and the program checks that uniqueness. Zero or
+multiple matches, fuzzy or ranked selection, and semantic judgment require
+returning candidates for model observation before acting in a later `exec`.
+Even a grounded or unique target must return evidence first when authority,
+permission, or ownership evidence conflicts or needs judgment. Observation
+does not replace normal tool policy or approvals.
 Unknown outputs stay raw-first: return the value unchanged, observe it, then
 filter or map it in a later `exec` instead of guessing field names. This also
 applies when a declared-output read feeds a final `-> ?` call: return that
@@ -682,18 +704,38 @@ metadata; `web_search` declares its exact normalized results/answer/error/raw
 union as a complete quick-index hint. Filesystem contracts return structured
 read text, image, truncation, and optional-not-found outcomes; explicit edit
 change state plus diff/patch data; and apply-patch path summaries. When the
-quick index declares the fields, one cell can compose discovery and delivery
-without a separate inspection turn:
+quick index declares the fields, one cell can perform deterministic transforms
+without a separate inspection turn. It can also select and mutate one target
+when an explicit equality predicate yields exactly one match:
 
 ```javascript
 const listed = await tools.conversations_list({ query: "build bot" });
-const target = listed.conversations.find((item) => item.label === "Build bot");
-if (!target) throw new Error("conversation not found");
+const matches = listed.conversations.filter((item) => item.label === "Build bot");
+if (matches.length !== 1) {
+  return matches.map(({ conversationRef, label }) => ({ conversationRef, label }));
+}
 return await tools.conversations_send({
-  conversationRef: target.conversationRef,
+  conversationRef: matches[0].conversationRef,
   message: "Build finished.",
 });
 ```
+
+When that program returns zero or multiple candidates, the model must observe
+them and identify the exact target before a later `exec` performs the mutation:
+
+```javascript
+return await tools.conversations_send({
+  conversationRef: "exact-observed-conversation-ref",
+  message: "Build finished.",
+});
+```
+
+The same observation boundary applies when target selection uses fuzzy
+matching, ranking, similarity, or semantic interpretation. An exact target id
+already supplied by the request or prior context needs no discovery read and
+may be used directly in the mutation only when authority, permission, and
+ownership evidence is unconflicted and requires no judgment. Otherwise return
+that evidence for model observation and mutate in a later `exec`.
 
 The nested calls still use normal tool policy, hooks, and approvals. If a full
 contract is exact but too large for the bounded quick index, it remains

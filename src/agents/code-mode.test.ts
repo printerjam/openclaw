@@ -215,26 +215,33 @@ describe("Code Mode catalog and model-visible surface", () => {
 
     expect(execTool.description).toContain("Node.js modules");
     expect(execTool.description).toContain("`require`/`import` are NOT available");
-    expect(execTool.description).toContain("process them in the first exec");
-    expect(execTool.description).toContain("do not spend another exec inspecting");
-    expect(execTool.description).toContain("dependent reads, checks, and follow-up calls in order");
-    expect(execTool.description).toContain("normal tool policy and approvals");
+    expect(execTool.description).toContain("Schemas prove structure only");
+    expect(execTool.description).toContain("request/context-grounded exact id");
+    expect(execTool.description).toContain("one equality match checked by `matches.length===1`");
+    expect(execTool.description).toContain(
+      "authority/permission/ownership evidence conflicts or needs judgment",
+    );
+    expect(execTool.description).toContain("return it and mutate later");
+    expect(execTool.description).toContain("Zero/multiple/fuzzy");
+    expect(execTool.description).toContain("fuzzy/ranked/semantic selection");
+    expect(execTool.description).toContain("returns candidates first");
+    expect(execTool.description).toContain("Order dependent reads/checks/calls");
+    expect(execTool.description).toContain("still enforce policy and approvals");
     expect(execTool.description).toContain("`ALL_TOOLS` is the complete compact catalog");
     expect(execTool.description).toContain("`tools.search(query: string, options?)`");
-    expect(execTool.description).toContain("enabled catalog tools allowed by policy");
+    expect(execTool.description).toContain("use enabled catalog tools");
     expect(execTool.description).toContain("`tools.describe(id: string)`");
     expect(execTool.description).toContain("`tools.callValue(id: string, args?)`");
     expect(execTool.description).toContain("`tools.call(id: string, args?)`");
     expect(execTool.description).toContain("Never invent or transform a tool id");
-    expect(execTool.description).toContain("Quick-index arrows show trusted declared output hints");
-    expect(execTool.description).toContain("`-> ?` means never guess result field names");
-    expect(execTool.description).toContain("never guess result field names");
-    expect(execTool.description).toContain("return the raw tool value unchanged");
-    expect(execTool.description).toContain("final dependent call after declared-output calls");
-    expect(execTool.description).toContain("do not wrap it in the requested answer shape");
-    expect(execTool.description).toContain("filter or map it only in a later exec");
-    expect(execTool.description).toContain("returns its JSON value directly");
-    expect(execTool.description).toContain("const hit = ALL_TOOLS.find");
+    expect(execTool.description).toContain("Quick-index arrows are trusted");
+    expect(execTool.description).toContain("`-> ?` means unknown fields");
+    expect(execTool.description).toContain("return raw unchanged");
+    expect(execTool.description).toContain("final dependent call");
+    expect(execTool.description).toContain("do not wrap or guess fields");
+    expect(execTool.description).toContain("transform later");
+    expect(execTool.description).toContain("returns its JSON value");
+    expect(execTool.description).toContain("const hit=ALL_TOOLS.find");
     expect(execTool.description).toContain('"javascript" or "typescript"');
     expect(execTool.description).toContain("never a shell command");
     expect(execTool.description).toContain("do not retry failed shell source");
@@ -245,23 +252,34 @@ describe("Code Mode catalog and model-visible surface", () => {
       execTool.description.lastIndexOf(nodesGuidance),
     );
 
-    expect(parameters.properties?.code?.description).toContain("no Python, shell");
+    expect(parameters.properties?.code?.description).toContain("no Python/shell");
+    expect(parameters.properties?.code?.description).toContain("trailing expression: `null`");
     expect(parameters.properties?.code?.description).toContain(
-      "a trailing expression is discarded and yields `null`",
+      'tools.callValue("openclaw:core:read",{path:"notes.txt"})',
+    );
+    expect(parameters.properties?.code?.description).toContain("`callValue` returns data");
+    expect(parameters.properties?.code?.description).toContain('r.kind==="text"?r.content:r');
+    expect(parameters.properties?.code?.description).not.toContain("return file.content");
+    expect(parameters.properties?.code?.description).toContain("return raw, parse later");
+    expect(parameters.properties?.code?.description).toContain("Schemas prove structure only");
+    expect(parameters.properties?.code?.description).toContain(
+      "Same-exec mutation needs grounded exact id",
     );
     expect(parameters.properties?.code?.description).toContain(
-      'tools.callValue("openclaw:core:read", { path: "notes.txt" })',
-    );
-    expect(parameters.properties?.code?.description).toContain("Use `callValue`, not `call`");
-    expect(parameters.properties?.code?.description).toContain("return file.content");
-    expect(parameters.properties?.code?.description).toContain(
-      "return it first, then parse it in a later exec",
+      "one equality match with `matches.length===1`",
     );
     expect(parameters.properties?.code?.description).toContain(
-      "exact ids from `ALL_TOOLS` or `tools.search(query)`",
+      "authority/permission/ownership evidence conflicts or needs judgment",
+    );
+    expect(parameters.properties?.code?.description).toContain("return it first");
+    expect(parameters.properties?.code?.description).toContain(
+      "zero/multiple/fuzzy/ranked/semantic selection waits",
+    );
+    expect(parameters.properties?.code?.description).toContain(
+      "Exact ids from `ALL_TOOLS` or `tools.search(query)`",
     );
     expect(parameters.properties?.code?.description).toContain("`ALL_TOOLS`");
-    expect(parameters.properties?.code?.description).toContain("`require`, `import`");
+    expect(parameters.properties?.code?.description).toContain("`require`/`import`");
     expect(parameters.properties).not.toHaveProperty("restartSafe");
     expect(parameters.properties?.language?.description).toContain(
       'Must be "javascript" or "typescript"',
@@ -313,6 +331,11 @@ describe("Code Mode catalog and model-visible surface", () => {
     const description = compacted.tools[0]?.description ?? "";
     expect(description).toContain("descriptions are intentionally deferred");
     expect(description).toContain("OUTPUT DECLARED RULE");
+    expect(description).toContain("grounded id/one exact match");
+    expect(description).toContain(
+      "authority/permission/ownership evidence conflicts or needs judgment",
+    );
+    expect(description).toContain("otherwise return evidence first");
     expect(description).toContain(
       '- "openclaw:fake-code-mode:alpha_tool" { value?: string } -> Array<{ id: string; score: number }>',
     );
